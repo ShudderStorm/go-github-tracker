@@ -57,17 +57,18 @@ const (
 	empty                accessErrorCode = ""
 )
 
-func (client *Client) DeviceFlow(ctx context.Context, authorizationHandler func(DeviceAuthorization), accessHandler func(DeviceAccess)) error {
-	auth, err := client.deviceAuthRequest(ctx)
+func (client *Client) DeviceFlow(ctx context.Context, errChan chan<- error, authChan chan<- DeviceAuthorization, accessChan chan<- DeviceAccess) {
+	authResp, err := client.deviceAuthRequest(ctx)
 	if err != nil {
-		return fmt.Errorf("oauth device authentification error: %w", err)
+		errChan <- err
+		return
 	}
 
-	authorizationHandler(auth.toDeviceAuthorization())
-	client.config.deviceCode = auth.DeviceCode
+	authChan <- authResp.toDeviceAuthorization()
+	client.config.deviceCode = authResp.DeviceCode
 
-	ttl := time.Duration(auth.ExpirationTime) * time.Second
-	interval := time.Duration(auth.Interval) * time.Second
+	ttl := time.Duration(authResp.ExpirationTime) * time.Second
+	interval := time.Duration(authResp.Interval) * time.Second
 
 	ctx, cancel := context.WithTimeout(ctx, ttl)
 	defer cancel()
@@ -78,26 +79,30 @@ func (client *Client) DeviceFlow(ctx context.Context, authorizationHandler func(
 	for {
 		select {
 		case <-ctx.Done():
-			return ctx.Err()
+			errChan <- ctx.Err()
+			return
 		case <-ticker.C:
-			resp, err := client.deviceAccessRequest(ctx)
+			acccessResp, err := client.deviceAccessRequest(ctx)
 			if err != nil {
-				return fmt.Errorf("oauth device polling error: %w", err)
+				errChan <- fmt.Errorf("oauth device polling error: %w", err)
+				return
 			}
 
-			switch resp.Error {
+			switch acccessResp.Error {
 			case authorizationPending:
 				ticker.Reset(interval)
 			case slowDown:
 				interval += 5 * time.Second
 				ticker.Reset(interval)
 			case accessDenied:
-				return AccessDenied
+				errChan <- AccessDenied
+				return
 			case expiredToken:
-				return ExpiredToken
+				errChan <- ExpiredToken
+				return
 			case empty:
-				accessHandler(resp.toDeviceAccess())
-				return nil
+				accessChan <- acccessResp.toDeviceAccess()
+				return
 			}
 		}
 	}
@@ -147,7 +152,7 @@ func (client *Client) deviceAccessRequest(ctx context.Context) (*deviceAccessRes
 		"grant_type":  {"urn:ietf:params:oauth:grant-type:device_code"},
 	}.Encode()
 
-	url := client.config.devicePollingURL
+	url := client.config.deviceAccessURL
 	if url == "" {
 		return nil, fmt.Errorf("missing device access URL")
 	}

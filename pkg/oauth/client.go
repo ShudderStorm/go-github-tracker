@@ -3,11 +3,11 @@ package oauth
 import "net/http"
 
 type config struct {
-	clientID         string
-	scopes           []string
-	deviceAuthURL    string
-	devicePollingURL string
-	deviceCode       string
+	clientID        string
+	scopes          []string
+	deviceAuthURL   string
+	deviceAccessURL string
+	deviceCode      string
 }
 
 type Doer interface {
@@ -42,7 +42,7 @@ func WithId(id string) Option {
 func WithDeviceFlow(authUrl string, pollUrl string) Option {
 	return func(c *Client) {
 		c.config.deviceAuthURL = authUrl
-		c.config.devicePollingURL = pollUrl
+		c.config.deviceAccessURL = pollUrl
 	}
 }
 
