@@ -39,10 +39,10 @@ func WithId(id string) Option {
 	}
 }
 
-func WithDeviceFlow(authUrl string, pollUrl string) Option {
+func WithDeviceFlow(authUrl string, accessUrl string) Option {
 	return func(c *Client) {
 		c.config.deviceAuthURL = authUrl
-		c.config.deviceAccessURL = pollUrl
+		c.config.deviceAccessURL = accessUrl
 	}
 }
 
