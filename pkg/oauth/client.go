@@ -3,27 +3,30 @@ package oauth
 import "net/http"
 
 type config struct {
-	clientID        string
-	scopes          []string
-	deviceAuthURL   string
-	deviceAccessURL string
-	deviceCode      string
-}
+	id     string
+	secret string
 
-type Doer interface {
-	Do(*http.Request) (*http.Response, error)
+	authEndpoint  string
+	tokenEndpoint string
+
+	redirectUri string
+	scopes      []string
 }
 
 type Client struct {
-	client Doer
+	client *http.Client
 	config config
 }
 
 type Option func(*Client)
 
-func New(doer Doer, opts ...Option) *Client {
+func New(authEndpoint string, tokenEndpoint string, opts ...Option) *Client {
 	client := &Client{
-		client: doer,
+		config: config{
+			authEndpoint:  authEndpoint,
+			tokenEndpoint: tokenEndpoint,
+		},
+		client: http.DefaultClient,
 	}
 
 	for _, opt := range opts {
@@ -35,14 +38,19 @@ func New(doer Doer, opts ...Option) *Client {
 
 func WithId(id string) Option {
 	return func(c *Client) {
-		c.config.clientID = id
+		c.config.id = id
 	}
 }
 
-func WithDeviceFlow(authUrl string, pollUrl string) Option {
+func WithSecret(secret string) Option {
 	return func(c *Client) {
-		c.config.deviceAuthURL = authUrl
-		c.config.deviceAccessURL = pollUrl
+		c.config.secret = secret
+	}
+}
+
+func WithRedirectUri(uri string) Option {
+	return func(c *Client) {
+		c.config.redirectUri = uri
 	}
 }
 
