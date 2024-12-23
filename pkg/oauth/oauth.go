@@ -30,31 +30,60 @@ func (r *accessResponse) toAccess() Access {
 }
 
 func (c *Client) GetAuthorizationUrl() (string, error) {
-	params := url.Values{
-		"client_id":    {c.config.id},
-		"redirect_uri": {c.config.redirectUri},
-		"scopes":       c.config.scopes,
-	}.Encode()
+	if c.config.id == "" {
+		return "", fmt.Errorf("%w:%s", ConfigError, "'id' parameter cannot be empty")
+	}
 
-	return fmt.Sprintf("%s?%s", c.config.authEndpoint, params), nil
+	_, err := url.ParseRequestURI(c.config.authUri)
+	if err != nil {
+		return "", fmt.Errorf("%w:%s:%w", ConfigError, "authorization URI validation error", err)
+	}
+
+	params := url.Values{
+		"client_id":     {c.config.id},
+		"response_type": {"token"},
+		"scopes":        c.config.scopes,
+	}
+
+	if c.config.redirectUri != "" {
+		_, err = url.ParseRequestURI(c.config.redirectUri)
+		if err != nil {
+			return "", fmt.Errorf("%w:%s:%w", ConfigError, "redirect URI validation error", err)
+		}
+
+		params.Add("redirect_uri", c.config.redirectUri)
+	}
+
+	return fmt.Sprintf("%s?%s", c.config.authUri, params.Encode()), nil
 }
 
 func (c *Client) Exchange(ctx context.Context, code string) (Access, error) {
-	var access Access
+	var (
+		access Access
+		err    error
+	)
 
 	params := url.Values{
 		"client_id":     {c.config.id},
 		"client_secret": {c.config.secret},
 		"code":          {code},
-		"redirect_uri":  {c.config.redirectUri},
-	}.Encode()
+	}
+
+	if c.config.redirectUri != "" {
+		_, err = url.ParseRequestURI(c.config.redirectUri)
+		if err != nil {
+			return access, fmt.Errorf("%w:%s:%w", ConfigError, "redirect URI validation error", err)
+		}
+
+		params.Add("redirect_uri", c.config.redirectUri)
+	}
 
 	req, err := http.NewRequestWithContext(
-		ctx, http.MethodPost, c.config.tokenEndpoint, strings.NewReader(params),
+		ctx, http.MethodPost, c.config.tokenUri, strings.NewReader(params.Encode()),
 	)
 
 	if err != nil {
-		return access, err
+		return access, fmt.Errorf("%w:%w", RequestError, err)
 	}
 
 	req.Header = http.Header{
@@ -64,10 +93,20 @@ func (c *Client) Exchange(ctx context.Context, code string) (Access, error) {
 
 	resp, err := c.client.Do(req)
 	if err != nil {
-		return access, err
+		return access, fmt.Errorf("%w:%w", RequestError, err)
+	}
+
+	if resp.StatusCode >= 400 && resp.StatusCode < 500 {
+		return access, fmt.Errorf("%w: response status code is %v", ClientError, resp.StatusCode)
+	}
+
+	if resp.StatusCode >= 500 {
+		return access, fmt.Errorf("%w: response status code is %v", ServerError, resp.StatusCode)
 	}
 
 	accessResp := &accessResponse{}
+	defer resp.Body.Close()
+
 	err = json.NewDecoder(resp.Body).Decode(accessResp)
 	if err != nil {
 		return access, err

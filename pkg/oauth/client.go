@@ -6,8 +6,8 @@ type config struct {
 	id     string
 	secret string
 
-	authEndpoint  string
-	tokenEndpoint string
+	authUri  string
+	tokenUri string
 
 	redirectUri string
 	scopes      []string
@@ -20,11 +20,13 @@ type Client struct {
 
 type Option func(*Client)
 
-func New(authEndpoint string, tokenEndpoint string, opts ...Option) *Client {
+func New(authUri string, tokenUri string, id string, secret string, opts ...Option) *Client {
 	client := &Client{
 		config: config{
-			authEndpoint:  authEndpoint,
-			tokenEndpoint: tokenEndpoint,
+			authUri:  authUri,
+			tokenUri: tokenUri,
+			id:       id,
+			secret:   secret,
 		},
 		client: http.DefaultClient,
 	}
@@ -34,18 +36,6 @@ func New(authEndpoint string, tokenEndpoint string, opts ...Option) *Client {
 	}
 
 	return client
-}
-
-func WithId(id string) Option {
-	return func(c *Client) {
-		c.config.id = id
-	}
-}
-
-func WithSecret(secret string) Option {
-	return func(c *Client) {
-		c.config.secret = secret
-	}
 }
 
 func WithRedirectUri(uri string) Option {
