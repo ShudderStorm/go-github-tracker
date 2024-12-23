@@ -5,11 +5,12 @@ import "fmt"
 type Error string
 
 const (
-	ConfigError  Error = "client configuration error"
-	RequestError Error = "request error"
-	ClientError  Error = "http client error"
-	ServerError  Error = "http server error"
-	ParsingError Error = "response parsing error"
+	InternalError Error = "internal error"
+	ConfigError   Error = "client configuration error"
+	RequestError  Error = "request error"
+	ClientError   Error = "http client error"
+	ServerError   Error = "http server error"
+	ParsingError  Error = "response parsing error"
 )
 
 func (err Error) Error() string {
