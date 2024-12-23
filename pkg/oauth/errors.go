@@ -5,8 +5,11 @@ import "fmt"
 type Error string
 
 const (
-	AccessDenied Error = "authorization request was denied"
-	ExpiredToken Error = "device code has expired"
+	ConfigError  Error = "client configuration error"
+	RequestError Error = "request error"
+	ClientError  Error = "http client error"
+	ServerError  Error = "http server error"
+	ParsingError Error = "response parsing error"
 )
 
 func (err Error) Error() string {
