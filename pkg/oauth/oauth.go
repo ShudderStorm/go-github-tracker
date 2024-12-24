@@ -34,7 +34,7 @@ func (c *Client) GetAuthorizationUrl() (string, error) {
 		return "", fmt.Errorf("%w:%s", ConfigError, "'id' parameter cannot be empty")
 	}
 
-	_, err := url.ParseRequestURI(c.config.authUri)
+	_, err := url.ParseRequestURI(c.config.authURI)
 	if err != nil {
 		return "", fmt.Errorf("%w:%s:%w", ConfigError, "authorization URI validation error", err)
 	}
@@ -42,19 +42,30 @@ func (c *Client) GetAuthorizationUrl() (string, error) {
 	params := url.Values{
 		"client_id":     {c.config.id},
 		"response_type": {"token"},
-		"scopes":        c.config.scopes,
+		"scope":         {strings.Join(c.config.scopes, " ")},
 	}
 
-	if c.config.redirectUri != "" {
-		_, err = url.ParseRequestURI(c.config.redirectUri)
+	if c.config.redirectURI != "" {
+		_, err = url.ParseRequestURI(c.config.redirectURI)
 		if err != nil {
 			return "", fmt.Errorf("%w:%s:%w", ConfigError, "redirect URI validation error", err)
 		}
 
-		params.Add("redirect_uri", c.config.redirectUri)
+		params.Add("redirect_uri", c.config.redirectURI)
 	}
 
-	return fmt.Sprintf("%s?%s", c.config.authUri, params.Encode()), nil
+	if c.config.withState {
+		state, err := generateState()
+
+		if err != nil {
+			return "", fmt.Errorf("%w:%w", InternalError, err)
+		}
+
+		params.Add("state", state)
+		c.config.validator.Store(state, c.config.stateTTL)
+	}
+
+	return fmt.Sprintf("%s?%s", c.config.authURI, params.Encode()), nil
 }
 
 func (c *Client) Exchange(ctx context.Context, code string) (Access, error) {
@@ -69,17 +80,17 @@ func (c *Client) Exchange(ctx context.Context, code string) (Access, error) {
 		"code":          {code},
 	}
 
-	if c.config.redirectUri != "" {
-		_, err = url.ParseRequestURI(c.config.redirectUri)
+	if c.config.redirectURI != "" {
+		_, err = url.ParseRequestURI(c.config.redirectURI)
 		if err != nil {
 			return access, fmt.Errorf("%w:%s:%w", ConfigError, "redirect URI validation error", err)
 		}
 
-		params.Add("redirect_uri", c.config.redirectUri)
+		params.Add("redirect_uri", c.config.redirectURI)
 	}
 
 	req, err := http.NewRequestWithContext(
-		ctx, http.MethodPost, c.config.tokenUri, strings.NewReader(params.Encode()),
+		ctx, http.MethodPost, c.config.tokenURI, strings.NewReader(params.Encode()),
 	)
 
 	if err != nil {
