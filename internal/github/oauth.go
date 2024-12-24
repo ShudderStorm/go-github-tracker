@@ -1,6 +1,6 @@
 package github
 
-import "github.com/ShudderStorm/go-github-tracker/pkg/oauth"
+import "github.com/ShudderStorm/go-github-tracker/internal/github/oauth"
 
 const (
 	AuthURL   string = "https://github.com/login/oauth/authorize"
