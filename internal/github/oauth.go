@@ -8,8 +8,8 @@ const (
 )
 
 const (
-	Repo string = "repo"
-	User string = "user"
+	RepoScope string = "repo"
+	UserScope string = "user"
 )
 
 func NewOAuthClient(id string, secret string, opts ...oauth.Option) *oauth.Client {
