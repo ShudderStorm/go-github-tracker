@@ -5,6 +5,8 @@ import "time"
 type User struct {
 	ID    uint64 `json:"id"`
 	Login string `json:"login"`
+	Email string `json:"email"`
+	Name  string `json:"name"`
 
 	ProfileURL string `json:"html_url"`
 	AvatarURL  string `json:"avatar_url"`
@@ -25,4 +27,7 @@ type Repo struct {
 	CreationTime   time.Time `json:"created_at"`
 	LastUpdateTime time.Time `json:"updated_at"`
 	LastPushTime   time.Time `json:"pushed_at"`
+
+	Watchers   int `json:"watchers_count"`
+	Stargazers int `json:"stargazers_count"`
 }
