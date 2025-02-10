@@ -16,7 +16,7 @@ type config struct {
 	scopes      []string
 
 	withState bool
-	validator StateValidator
+	validator StateHolder
 	stateTTL  time.Duration
 }
 
@@ -57,7 +57,7 @@ func WithScopes(scopes ...string) Option {
 	}
 }
 
-func WithState(validator StateValidator) Option {
+func WithState(validator StateHolder) Option {
 	return func(c *Client) {
 		c.config.withState = true
 		c.config.validator = validator

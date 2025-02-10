@@ -24,7 +24,7 @@ func handleStatusCode(statusCode int) error {
 	case http.StatusUnauthorized:
 		return fmt.Errorf("%w (http status code: %v)", Unathorized, http.StatusUnauthorized)
 	case http.StatusForbidden:
-		return fmt.Errorf("%w (http status code: %v)", Forbidden, http.StatusUnauthorized)
+		return fmt.Errorf("%w (http status code: %v)", Forbidden, http.StatusForbidden)
 	}
 	return nil
 }
