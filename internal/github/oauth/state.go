@@ -10,23 +10,23 @@ import (
 
 const DefaultStateTTL time.Duration = 5 * time.Minute
 
-type StateValidator interface {
+type StateHolder interface {
 	Store(string, time.Duration) error
 	Validate(string) (bool, error)
 }
 
-type StateHolder struct {
+type DefaultStateHolder struct {
 	stateExpiration map[string]time.Time
 	mu              sync.RWMutex
 }
 
-func DefaultStateHolder() *StateHolder {
-	return &StateHolder{
+func NewDefaultStateHolder() *DefaultStateHolder {
+	return &DefaultStateHolder{
 		stateExpiration: make(map[string]time.Time),
 	}
 }
 
-func (h *StateHolder) Store(state string, ttl time.Duration) error {
+func (h *DefaultStateHolder) Store(state string, ttl time.Duration) error {
 	h.mu.Lock()
 	defer h.mu.Unlock()
 
@@ -34,7 +34,7 @@ func (h *StateHolder) Store(state string, ttl time.Duration) error {
 	return nil
 }
 
-func (h *StateHolder) Validate(state string) (bool, error) {
+func (h *DefaultStateHolder) Validate(state string) (bool, error) {
 	h.mu.RLock()
 	defer h.mu.RUnlock()
 
