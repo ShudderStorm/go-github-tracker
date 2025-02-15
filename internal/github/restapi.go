@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"net/url"
 
-	"github.com/ShudderStorm/go-github-tracker/internal/github/oauth"
+	"github.com/ShudderStorm/go-github-tracker/pkg/oauth"
 	"github.com/go-resty/resty/v2"
 )
 
