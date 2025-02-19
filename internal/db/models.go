@@ -1,5 +1,7 @@
 package db
 
+import "time"
+
 type Access struct {
 	ID uint `gorm:"primaryKey"`
 
@@ -15,15 +17,50 @@ type User struct {
 
 	Login string
 
-	Profile Profile `gorm:"foreignKey:ID;constraint:OnDelete:CASCADE"`
+	Profile UserProfile `gorm:"foreignKey:UserID;constraint:OnDelete:CASCADE"`
+	Repos   Repo        `gorm:"foreignKey:OwnerID;constraint:OnDelete:SET NULL"`
 }
 
-type Profile struct {
-	ID uint `gorm:"primaryKey"`
+type UserProfile struct {
+	UserID uint64
 
 	Name  string
 	Email string
 
 	GitHubURL string
 	AvatarURL string
+}
+
+type Repo struct {
+	ID uint64 `gorm:"primaryKey"`
+
+	OwnerID uint64
+
+	Profile RepoProfile `gorm:"foreignKey:RepoID;constraint:OnDelete:CASCADE"`
+	Meta    RepoMeta    `gorm:"foreignKey:RepoID;constraint:OnDelete:CASCADE"`
+}
+
+type RepoProfile struct {
+	RepoID uint64
+
+	Name     string
+	FullName string
+	Private  bool
+
+	GitHubURL   string
+	Description string
+}
+
+type RepoMeta struct {
+	RepoID uint64
+
+	CreationTime   time.Time
+	LastUpdateTime time.Time
+	LastPushTime   time.Time
+
+	Size     uint
+	Language string
+
+	Watchers   uint
+	Stargazers uint
 }
