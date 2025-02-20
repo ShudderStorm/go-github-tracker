@@ -7,6 +7,7 @@ type IConfigurator interface {
 	SetUser(string) IUserConfigurator
 	SetAddres(string) IConfigurator
 	SetDBName(string) IConfigurator
+	SetParams(map[string]string) IConfigurator
 }
 
 type IUserConfigurator interface {
@@ -45,5 +46,12 @@ func (c *configurator) SetAddres(addres string) IConfigurator {
 
 func (c *configurator) SetDBName(dbname string) IConfigurator {
 	c.config.DBName = dbname
+	return c
+}
+
+func (c *configurator) SetParams(params map[string]string) IConfigurator {
+	for param, value := range params {
+		c.config.Params[param] = value
+	}
 	return c
 }
