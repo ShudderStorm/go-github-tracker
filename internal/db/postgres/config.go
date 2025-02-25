@@ -2,87 +2,58 @@ package postgres
 
 import (
 	"fmt"
-	"net/url"
-
 	"github.com/ShudderStorm/go-github-tracker/internal/db/postgres/ssl"
+	"net/url"
 )
 
-type IConfig interface {
-	SetHost(string) IHostConfig
-	SetUser(string) IUserConfig
-
-	SetSSLMode(ssl.Mode) IConfig
-	SetDBName(string) IConfig
-
-	Compile() *Provider
-}
-
-type IUserConfig interface {
-	IConfig
-	SetPassword(string) IConfig
-}
-
-type IHostConfig interface {
-	SetPort(uint16) IConfig
-}
-
-type config struct {
+type Config struct {
 	host string
 	port uint16
 
 	user     string
 	password string
-	dbname   string
+	database string
 
 	params *url.Values
 }
 
-func Config() IConfig {
-	return &config{params: &url.Values{}}
+type ConfigOption func(*Config)
+
+func New(host string, port uint16, user, password, database string, opts ...ConfigOption) *Config {
+	cfg := &Config{
+		host:     host,
+		port:     port,
+		user:     user,
+		password: password,
+		database: database,
+		params:   &url.Values{},
+	}
+
+	for _, opt := range opts {
+		opt(cfg)
+	}
+
+	return cfg
 }
 
-func (c *config) SetHost(host string) IHostConfig {
-	c.host = host
-	return c
+func WithSSL(mode ssl.Mode) ConfigOption {
+	return func(cfg *Config) {
+		cfg.params.Set("sslmode", string(mode))
+	}
 }
 
-func (c *config) SetPort(port uint16) IConfig {
-	c.port = port
-	return c
-}
-
-func (c *config) SetUser(user string) IUserConfig {
-	c.user = user
-	return c
-}
-
-func (c *config) SetPassword(password string) IConfig {
-	c.password = password
-	return c
-}
-
-func (c *config) SetSSLMode(sslmode ssl.Mode) IConfig {
-	c.params.Set("sslmode", string(sslmode))
-	return c
-}
-
-func (c *config) SetDBName(dbname string) IConfig {
-	c.dbname = dbname
-	return c
-}
-
-func (c *config) GetDSN() string {
+func (cfg *Config) GetDSN() string {
 	dsn := &url.URL{
 		Scheme:   "postgres",
-		User:     url.UserPassword(c.user, c.password),
-		Host:     fmt.Sprintf("%s:%d", c.host, c.port),
-		Path:     c.dbname,
-		RawQuery: c.params.Encode(),
+		User:     url.UserPassword(cfg.user, cfg.password),
+		Host:     fmt.Sprintf("%s:%d", cfg.host, cfg.port),
+		Path:     cfg.database,
+		RawQuery: cfg.params.Encode(),
 	}
 
 	return dsn.String()
 }
 
-func (c *config) Compile() *Provider {
-	return &Provider{dsn: c.GetDSN()}
+func (cfg *Config) Compile() *Provider {
+	return &Provider{dsn: cfg.GetDSN()}
 }
