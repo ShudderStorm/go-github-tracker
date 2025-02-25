@@ -1,25 +1,24 @@
 package postgres
 
-import "fmt"
+import (
+	"fmt"
+	"net/url"
 
-type SSLMode string
-
-const (
-	SSLDisable SSLMode = "disable"
-	SSLRequire SSLMode = "require"
+	"github.com/ShudderStorm/go-github-tracker/internal/db/postgres/ssl"
 )
 
 type IConfig interface {
 	SetHost(string) IHostConfig
 	SetUser(string) IUserConfig
 
-	SetSSLMode(SSLMode) IConfig
+	SetSSLMode(ssl.Mode) IConfig
 	SetDBName(string) IConfig
 
 	Compile() *Provider
 }
 
 type IUserConfig interface {
+	IConfig
 	SetPassword(string) IConfig
 }
 
@@ -35,11 +34,11 @@ type config struct {
 	password string
 	dbname   string
 
-	sslmode SSLMode
+	params *url.Values
 }
 
 func Config() IConfig {
-	return &config{}
+	return &config{params: &url.Values{}}
 }
 
 func (c *config) SetHost(host string) IHostConfig {
@@ -62,8 +61,8 @@ func (c *config) SetPassword(password string) IConfig {
 	return c
 }
 
-func (c *config) SetSSLMode(sslmode SSLMode) IConfig {
-	c.sslmode = sslmode
+func (c *config) SetSSLMode(sslmode ssl.Mode) IConfig {
+	c.params.Set("sslmode", string(sslmode))
 	return c
 }
 
@@ -73,10 +72,15 @@ func (c *config) SetDBName(dbname string) IConfig {
 }
 
 func (c *config) GetDSN() string {
-	return fmt.Sprintf(
-		"host=%s port=%d user=%s password=%s sslmode=%s dbname=%s",
-		c.host, c.port, c.user, c.password, c.sslmode, c.dbname,
-	)
+	dsn := &url.URL{
+		Scheme:   "postgres",
+		User:     url.UserPassword(c.user, c.password),
+		Host:     fmt.Sprintf("%s:%d", c.host, c.port),
+		Path:     c.dbname,
+		RawQuery: c.params.Encode(),
+	}
+
+	return dsn.String()
 }
 
 func (c *config) Compile() *Provider {
