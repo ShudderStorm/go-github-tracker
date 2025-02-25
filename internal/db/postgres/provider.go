@@ -5,8 +5,8 @@ import (
 	"gorm.io/gorm"
 )
 
-type DSNProvider interface {
-	GetDSN() string
+type dsnProvider interface {
+	dsn() string
 }
 
 type Provider struct {

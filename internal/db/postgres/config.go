@@ -42,7 +42,7 @@ func WithSSL(mode ssl.Mode) ConfigOption {
 	}
 }
 
-func (cfg *Config) GetDSN() string {
+func (cfg *Config) dsn() string {
 	dsn := &url.URL{
 		Scheme:   "postgres",
 		User:     url.UserPassword(cfg.user, cfg.password),
@@ -55,5 +55,5 @@ func (cfg *Config) GetDSN() string {
 }
 
 func (cfg *Config) Compile() *Provider {
-	return &Provider{dsn: cfg.GetDSN()}
+	return &Provider{dsn: cfg.dsn()}
 }
