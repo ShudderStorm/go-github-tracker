@@ -10,14 +10,19 @@ type AccessCrud struct {
 }
 
 func (crud *AccessCrud) Create(access model.Access) error {
+	err := crud.db.Create(&access).Error
+	if err != nil {
+		return err
+	}
+
 	for _, scope := range access.Scopes {
-		err := crud.db.Create(&scope).Error
+		err = crud.db.Create(&scope).Error
 		if err != nil {
 			return err
 		}
 	}
 
-	return crud.db.Create(&access).Error
+	return nil
 }
 
 func (crud *AccessCrud) Read(id uint64) (model.Access, error) {

@@ -17,7 +17,8 @@ type Scope struct {
 }
 
 type User struct {
-	ID uint64 `gorm:"primaryKey"`
+	ID       uint64 `gorm:"primaryKey"`
+	AccessID uint64
 
 	Login string
 	Name  string
@@ -26,7 +27,7 @@ type User struct {
 	GitHubURL string
 	AvatarURL string
 
-	Access Access `gorm:"foreignKey:ID;constraint:OnDelete:CASCADE"`
+	Access Access `gorm:"foreignKey:AccessID;constraint:OnDelete:CASCADE"`
 }
 
 type Repo struct {
