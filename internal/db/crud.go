@@ -1,36 +1,47 @@
 package db
 
-import "gorm.io/gorm"
-
-type Model interface {
-	Access | User | Repo
-}
-
-type crud[M Model] struct {
-	model M
-	db    *gorm.DB
-}
-
-type (
-	AccessCrud crud[Access]
-	UserCrud   crud[User]
-	RepoCrud   crud[Repo]
+import (
+	"github.com/ShudderStorm/go-github-tracker/internal/db/model"
+	"gorm.io/gorm"
 )
 
-func (crud *crud[M]) Create(value M) error {
-	return crud.db.Create(&value).Error
+type AccessCrud struct {
+	db *gorm.DB
 }
 
-func (crud *crud[M]) Read(id uint64) (M, error) {
-	model := crud.model
-	result := crud.db.First(&model, id)
-	return model, result.Error
+func (crud *AccessCrud) Create(access model.Access) error {
+	for _, scope := range access.Scopes {
+		err := crud.db.Create(&scope).Error
+		if err != nil {
+			return err
+		}
+	}
+
+	return crud.db.Create(&access).Error
 }
 
-func (crud *crud[M]) Update(id uint64, update M) error {
-	return crud.db.Model(&crud.model).Where(id).Updates(update).Error
+func (crud *AccessCrud) Read(id uint64) (model.Access, error) {
+	access := model.Access{ID: id}
+	err := crud.db.First(&access).Error
+	return access, err
 }
 
-func (crud *crud[M]) Delete(id uint64) error {
-	return crud.db.Delete(&crud.model, id).Error
+type UserCrud struct {
+	db *gorm.DB
+}
+
+func (crud *UserCrud) Create(user model.User) error {
+	return crud.db.Create(&user).Error
+}
+
+func (crud *UserCrud) Read(id uint64) (model.User, error) {
+	user := model.User{ID: id}
+	err := crud.db.First(&user).Error
+	return user, err
+}
+
+func (crud *UserCrud) GetOwnedRepos(id uint64) ([]model.Repo, error) {
+	var repos []model.Repo
+	err := crud.db.Where(&model.Repo{OwnerID: id}).Find(&repos).Error
+	return repos, err
 }

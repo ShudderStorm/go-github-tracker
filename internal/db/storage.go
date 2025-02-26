@@ -1,11 +1,15 @@
 package db
 
 import (
+	"github.com/ShudderStorm/go-github-tracker/internal/db/model"
 	"gorm.io/gorm"
 )
 
 type Storage struct {
 	db *gorm.DB
+
+	Access *AccessCrud
+	User   *UserCrud
 }
 
 type Provider interface {
@@ -19,21 +23,13 @@ func New(provider Provider) (*Storage, error) {
 		return nil, err
 	}
 
-	return &Storage{db: db}, nil
+	return &Storage{
+		db:     db,
+		Access: &AccessCrud{db: db},
+		User:   &UserCrud{db: db},
+	}, nil
 }
 
 func (s *Storage) Migrate() error {
-	return s.db.AutoMigrate(&Access{}, &User{}, &Repo{})
-}
-
-func (s *Storage) Access() *AccessCrud {
-	return &AccessCrud{model: Access{}, db: s.db}
-}
-
-func (s *Storage) User() *UserCrud {
-	return &UserCrud{model: User{}, db: s.db}
-}
-
-func (s *Storage) Repo() *RepoCrud {
-	return &RepoCrud{model: Repo{}, db: s.db}
+	return s.db.AutoMigrate(&model.Access{}, &model.Scope{}, &model.User{}, &model.Repo{})
 }

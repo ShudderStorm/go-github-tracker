@@ -1,13 +1,19 @@
-package db
+package model
 
 import "time"
 
 type Access struct {
 	ID uint64 `gorm:"primaryKey"`
 
-	Token  string
-	Type   string
-	Scopes string
+	Token string
+	Type  string
+
+	Scopes []Scope `gorm:"foreignKey:AccessID;constraint:OnDelete:CASCADE;"`
+}
+
+type Scope struct {
+	AccessID uint64
+	Scope    string
 }
 
 type User struct {
@@ -21,7 +27,6 @@ type User struct {
 	AvatarURL string
 
 	Access Access `gorm:"foreignKey:ID;constraint:OnDelete:CASCADE"`
-	Repos  []Repo `gorm:"foreignKey:OwnerID;constraint:OnDelete:CASCADE"`
 }
 
 type Repo struct {
@@ -42,4 +47,6 @@ type Repo struct {
 	CreatedAt     time.Time
 	LastUpdatedAt time.Time
 	LastPushedAt  time.Time
+
+	Owner User `gorm:"foreignKey:OwnerID;constraint:OnDelete:CASCADE"`
 }
