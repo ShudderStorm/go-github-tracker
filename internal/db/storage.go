@@ -6,10 +6,8 @@ import (
 )
 
 type Storage struct {
-	db *gorm.DB
-
+	db     *gorm.DB
 	Access *AccessCrud
-	User   *UserCrud
 }
 
 type Provider interface {
@@ -26,10 +24,9 @@ func New(provider Provider) (*Storage, error) {
 	return &Storage{
 		db:     db,
 		Access: &AccessCrud{db: db},
-		User:   &UserCrud{db: db},
 	}, nil
 }
 
 func (s *Storage) Migrate() error {
-	return s.db.AutoMigrate(&model.Access{}, &model.Scope{}, &model.User{}, &model.Repo{})
+	return s.db.AutoMigrate(&model.Access{}, &model.Scope{}, &model.User{})
 }

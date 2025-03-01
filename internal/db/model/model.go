@@ -1,7 +1,5 @@
 package model
 
-import "time"
-
 type Access struct {
 	ID uint64 `gorm:"primaryKey"`
 
@@ -9,45 +7,19 @@ type Access struct {
 	Type  string
 
 	Scopes []Scope `gorm:"foreignKey:AccessID;constraint:OnDelete:CASCADE;"`
+	User   User    `gorm:"foreignKey:AccessID;constraint:OnDelete:CASCADE;"`
 }
 
 type Scope struct {
-	AccessID uint64
-	Scope    string
+	AccessID uint64 `gorm:"primaryKey"`
+	Scope    string `gorm:"primaryKey"`
 }
 
 type User struct {
 	ID       uint64 `gorm:"primaryKey"`
-	AccessID uint64
+	AccessID uint64 `gorm:"unique"`
 
 	Login string
 	Name  string
 	Email string
-
-	GitHubURL string
-	AvatarURL string
-
-	Access Access `gorm:"foreignKey:AccessID;constraint:OnDelete:CASCADE"`
-}
-
-type Repo struct {
-	ID uint64 `gorm:"primaryKey"`
-
-	OwnerID  uint64
-	Name     string
-	FullName string
-	Private  bool
-
-	GitHubURL   string
-	Description string
-	Watchers    uint
-	Stargazers  uint
-	Size        uint
-	Language    string
-
-	CreatedAt     time.Time
-	LastUpdatedAt time.Time
-	LastPushedAt  time.Time
-
-	Owner User `gorm:"foreignKey:OwnerID;constraint:OnDelete:CASCADE"`
 }
