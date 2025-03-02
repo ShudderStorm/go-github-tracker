@@ -1,7 +1,7 @@
 package model
 
 type Access struct {
-	ID uint64 `gorm:"primaryKey"`
+	ID uint64 `gorm:"primaryKey;autoIncrement:false"`
 
 	Token string
 	Type  string
@@ -11,12 +11,12 @@ type Access struct {
 }
 
 type Scope struct {
-	AccessID uint64 `gorm:"primaryKey"`
+	AccessID uint64 `gorm:"primaryKey;autoIncrement:false"`
 	Scope    string `gorm:"primaryKey"`
 }
 
 type User struct {
-	ID       uint64 `gorm:"primaryKey"`
+	ID       uint64 `gorm:"primaryKey;autoIncrement:false"`
 	AccessID uint64 `gorm:"unique"`
 
 	Login string

@@ -10,7 +10,11 @@ type AccessCrud struct {
 }
 
 func (crud *AccessCrud) Create(access model.Access) error {
-	return crud.db.Create(&access).Error
+	return crud.db.
+		Preload("Scopes").
+		Preload("User").
+		Create(&access).
+		Error
 }
 
 func (crud *AccessCrud) Read(id uint64) (model.Access, error) {
