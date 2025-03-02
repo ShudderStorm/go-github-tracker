@@ -28,6 +28,6 @@ type Repo struct {
 	LastUpdateTime time.Time `json:"updated_at"`
 	LastPushTime   time.Time `json:"pushed_at"`
 
-	Watchers   int `json:"watchers_count"`
-	Stargazers int `json:"stargazers_count"`
+	Watchers   uint `json:"watchers_count"`
+	Stargazers uint `json:"stargazers_count"`
 }
