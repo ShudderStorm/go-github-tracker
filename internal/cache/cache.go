@@ -6,7 +6,7 @@ import (
 )
 
 type KeyValStorage interface {
-	Set(context.Context, string, string, time.Duration) error
+	Set(context.Context, string, []byte, time.Duration) error
 	Exists(context.Context, string) (bool, error)
-	Get(context.Context, string) (string, error)
+	Get(context.Context, string) ([]byte, error)
 }

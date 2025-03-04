@@ -3,8 +3,9 @@ package redis
 import (
 	"context"
 	"fmt"
-	"github.com/redis/go-redis/v9"
 	"time"
+
+	"github.com/redis/go-redis/v9"
 )
 
 type Storage struct {
@@ -17,7 +18,7 @@ func New(host string, port uint16) *Storage {
 	})}
 }
 
-func (s *Storage) Set(ctx context.Context, key string, value string, ttl time.Duration) error {
+func (s *Storage) Set(ctx context.Context, key string, value []byte, ttl time.Duration) error {
 	return s.client.Set(
 		ctx, key, value, ttl,
 	).Err()
@@ -33,6 +34,6 @@ func (s *Storage) Exists(ctx context.Context, key string) (bool, error) {
 	return exists > 0, nil
 }
 
-func (s *Storage) Get(ctx context.Context, key string) (string, error) {
-	return s.client.Get(ctx, key).Result()
+func (s *Storage) Get(ctx context.Context, key string) ([]byte, error) {
+	return s.client.Get(ctx, key).Bytes()
 }
