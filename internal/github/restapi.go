@@ -26,7 +26,7 @@ type RestApi struct {
 	client resty.Client
 }
 
-func NewRestApiClient(access oauth.Access) *RestApi {
+func New(access oauth.Access) *RestApi {
 	return &RestApi{
 		access: access,
 		client: *resty.New(),
@@ -54,7 +54,7 @@ func (r *RestApi) GetUser() (User, error) {
 	return user, err
 }
 
-func (r *RestApi) getUserRepos(params url.Values) ([]Repo, error) {
+func (r *RestApi) fetchRepos(params url.Values) ([]Repo, error) {
 	var repos = make([]Repo, 0)
 
 	resp, err := r.client.R().
@@ -76,8 +76,8 @@ func (r *RestApi) getUserRepos(params url.Values) ([]Repo, error) {
 	return repos, err
 }
 
-func (r *RestApi) GetUserOwnedRepos() ([]Repo, error) {
-	return r.getUserRepos(
+func (r *RestApi) OwnedRepos() ([]Repo, error) {
+	return r.fetchRepos(
 		url.Values{
 			"sort":        {"updated"},
 			"direction":   {"desc"},
@@ -86,8 +86,8 @@ func (r *RestApi) GetUserOwnedRepos() ([]Repo, error) {
 	)
 }
 
-func (r *RestApi) GetUserCollaboratedRepos() ([]Repo, error) {
-	return r.getUserRepos(
+func (r *RestApi) CollaboratedRepos() ([]Repo, error) {
+	return r.fetchRepos(
 		url.Values{
 			"sort":        {"updated"},
 			"direction":   {"desc"},
