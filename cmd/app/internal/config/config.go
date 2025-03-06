@@ -1,10 +1,5 @@
 package config
 
-import (
-	"gopkg.in/yaml.v3"
-	"io"
-)
-
 type Config struct {
 	Postgres struct {
 		Host     string `yaml:"host"`
@@ -20,13 +15,4 @@ type Config struct {
 	GitHub struct {
 		Secret string `yaml:"secret"`
 	}
-}
-
-func Parse(reader io.Reader) (*Config, error) {
-	config := &Config{}
-	err := yaml.NewDecoder(reader).Decode(config)
-	if err != nil {
-		return nil, err
-	}
-	return config, nil
 }
