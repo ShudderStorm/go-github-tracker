@@ -1,23 +1,33 @@
 package config
 
 import (
-	"bufio"
 	"gopkg.in/yaml.v3"
+	"io"
 )
 
 type YamlProvider struct {
-	reader *bufio.Reader
+	config Config
 }
 
-func NewYamlProvider(reader bufio.Reader) *YamlProvider {
-	return &YamlProvider{reader: &reader}
-}
-
-func (p *YamlProvider) Parse(filename string) (*Config, error) {
+func NewYamlProvider(reader io.Reader) (*YamlProvider, error) {
 	config := &Config{}
-	err := yaml.NewDecoder(p.reader).Decode(config)
+	err := yaml.NewDecoder(reader).Decode(config)
+
 	if err != nil {
 		return nil, err
 	}
-	return config, nil
+
+	return &YamlProvider{config: *config}, nil
+}
+
+func (p *YamlProvider) ConfigDatabase() Database {
+	return p.config.Database
+}
+
+func (p *YamlProvider) ConfigCache() Cache {
+	return p.config.Cache
+}
+
+func (p *YamlProvider) ConfigOAuth() OAuth {
+	return p.config.OAuth
 }
