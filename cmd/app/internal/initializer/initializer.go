@@ -22,19 +22,6 @@ type OAuthConfig interface {
 	ConfigOAuth() config.OAuth
 }
 
-type DatabaseInitializer interface {
-	InitDatabase() (*db.Storage, error)
-}
-
-type CacheInitializer interface {
-	InitAccessCache() *cache.Cache[cache.Access]
-	InitStateCache() *cache.Cache[cache.State]
-}
-
-type OAuthInitializer interface {
-	InitOAuth(opts ...oauth.Option) *oauth.Client
-}
-
 type Initializer struct {
 	dbConfig    DatabaseConfig
 	cacheConfig CacheConfig
