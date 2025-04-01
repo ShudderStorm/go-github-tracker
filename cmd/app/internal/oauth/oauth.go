@@ -28,6 +28,10 @@ func init() {
 		oauth.WithStateTTL(
 			oauth.DefaultStateTTL,
 		),
+		oauth.WithScopes(
+			github.UserScope,
+			github.RepoScope,
+		),
 	)
 }
 
