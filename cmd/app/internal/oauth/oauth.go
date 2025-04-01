@@ -23,3 +23,7 @@ func init() {
 		id, secret,
 	)
 }
+
+func SetRedirectUrl(url string) {
+	oauth.WithRedirectUri(url)(Client)
+}
