@@ -2,7 +2,6 @@ package redis
 
 import (
 	"context"
-	"fmt"
 	"github.com/redis/go-redis/v9"
 	"time"
 )
@@ -11,9 +10,9 @@ type Storage struct {
 	client *redis.Client
 }
 
-func New(host string, port uint16) *Storage {
+func New(address string) *Storage {
 	return &Storage{client: redis.NewClient(&redis.Options{
-		Addr: fmt.Sprintf("%s:%d", host, port),
+		Addr: address,
 	})}
 }
 

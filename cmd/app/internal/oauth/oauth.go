@@ -1,6 +1,7 @@
 package oauth
 
 import (
+	"github.com/ShudderStorm/go-github-tracker/cmd/app/internal/redis"
 	"github.com/ShudderStorm/go-github-tracker/internal/github"
 	"github.com/ShudderStorm/go-github-tracker/pkg/oauth"
 	"os"
@@ -21,6 +22,12 @@ func init() {
 		github.AuthURL,
 		github.AccessURL,
 		id, secret,
+		oauth.WithState(
+			NewRedisStateHolder(redis.Storage),
+		),
+		oauth.WithStateTTL(
+			oauth.DefaultStateTTL,
+		),
 	)
 }
 
